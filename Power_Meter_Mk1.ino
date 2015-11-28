@@ -1,29 +1,30 @@
 /*
  *  This sketch is for a simple but very accurate and reliable 2 port HTTP 
- *  webserver using the basic ESP8266-01 wifi soc module or ESP8266-12E 
- *  and is designed to measure the power companies digital electricity  
- *  meter LED pulses and convert them into kilowatt power consumption.
+ *  webserver using the basic ESP8266-12-dev-kit wifi soc module  
+ *  and is designed to measure a digital electric meters 
+ *  LED pulses and convert them into kilowatt power consumption.
  *  The data may then be retrieved via wifi by PC, tablet, 
  *  smartphone or micro as a normal web page request. There are 
  *  a number of different messages all slightly different to
  *  suit various requirements - pretty them up as you please.
  *  It can be configured in standard or debug mode.
  *  Debug additionally transmits serial process data and flashes the blue
- *  on-board LED - useful to see messages are being processed.
- *  An external LED may be added via a 390ohm or so resistor to port GPIO2 
+ *  on-board LED. Power Light detector with 3.3v and connect output to GPIO4 (D2).
+ *  An external LED may be added via a 390ohm resistor to port GPIO5 (D1)  
  *  to indicate meter LED flashes are being processed although the
  *  light detector also has an LED indicating a meter pulse.
  *  The form of the request is such -
- *    http:// local server ip address/gpio/0 ... 1/2/3 .../8
+ *     http:// local server ip address/gpio/0 ... 1/2/3 .../8
+ *     eg http://192.168.0.100/gpio/1
  *  The server_ip is the local IP address of the ESP8266 module, 
  *  and will be printed to Serial when the module is connected
- *  e.g. 192.168.0.100
+ *  e.g. 192.168.0.100 required more if using DHP
  *  Power meter software Dave Clapham - infinityab56@gmail.com
  */
 
 #include <ESP8266WiFi.h>
 
-boolean debug = false;  // turn serial port debug OFF/ON
+boolean debug = true;  // turn serial port debug OFF/ON
 boolean pulsehigh = true;
 const String st_html = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<!DOCTYPE HTML>\r\n<html>\r\n";
 float power;
@@ -31,8 +32,8 @@ float eltimest;
 float eltimeend;
 
 // ******** USER ENTRIES *************
-const char* ssid = "Your SSID";    // set your local network SSID
-const char* password = "Your Password";  
+const char* ssid = "Band-NG-N3";    // set your local network SSID
+const char* password = "amersham";  
 const unsigned int meter_pulses = 1000; // set for your meter eg 1000/KW, 800/Kw for Sprint meters
 
 // Create an instance of the server and specify the port to listen on
@@ -40,17 +41,17 @@ const unsigned int meter_pulses = 1000; // set for your meter eg 1000/KW, 800/Kw
 WiFiServer server(80);
 
 void setup() {
-  pinMode(0, INPUT_PULLUP); // to try and ensure ESP8266 can start properly
-  pinMode(2, INPUT_PULLUP); // with pulse input attached - see readme
+  pinMode(4, INPUT_PULLUP); // to try and ensure ESP8266 can start properly
+  pinMode(5, INPUT_PULLUP); // with pulse input attached - see readme
   if (!debug) pinMode(1, OUTPUT); 
   delay(3000);
   if (debug) Serial.begin(115200);
   delay(500);
  
-  pinMode(0, INPUT_PULLUP);    // prepare GPIO ports, set up pulse mode input
-  pinMode(2, OUTPUT);
+  pinMode(4, INPUT_PULLUP);    // prepare GPIO ports, set up pulse mode input
+  pinMode(5, OUTPUT);
   if (!debug) digitalWrite(1,1);  // use TX LED as indicator
-  digitalWrite(2, 0); // switch on external LED
+  digitalWrite(5, 0); // switch on external LED
 
   // Connect to WiFi network
   if (debug) {
@@ -66,13 +67,10 @@ void setup() {
   WiFi.config(ip, gateway, subnet); // *
   while (WiFi.status() != WL_CONNECTED) {
   delay(500);
-  if (debug) {
-    Serial.print(".");
-    Serial.println("");
-    Serial.println("WiFi connected");
-    }
+  if (debug) Serial.print(".");
   }
   // Start the server
+  if (debug) Serial.println("WiFi connected");
   server.begin();
   if (debug) {
     Serial.println("Server started");
@@ -81,21 +79,21 @@ void setup() {
 }
 
 void loop() {
-  if (digitalRead(0) == LOW && pulsehigh) {
+  if (digitalRead(4) == LOW && pulsehigh) {
     pulsehigh = false;
     eltimeend = millis();
     power = 3600 * 1000 / (meter_pulses * (eltimeend - eltimest));
     eltimest = eltimeend;
-    digitalWrite(2,0);  // LED indicator on this pin
+    digitalWrite(5,0);  // LED indicator on this pin
     if (!debug) digitalWrite(1,0);  // use TX LED as indicator
     delay(100);  // debounce 100ms
     } else 
     {
-      if (digitalRead(0) == HIGH && !pulsehigh)
+      if (digitalRead(4) == HIGH && !pulsehigh)
         {
         pulsehigh = true;
         if (!debug) digitalWrite(1,1);  // use TX LED as indicator
-        digitalWrite(2,1);  // LED indicator on this pin
+        digitalWrite(5,1);  // LED indicator on this pin
         delay(100);  // debounce 100ms        
         }
     } 
@@ -105,9 +103,19 @@ void loop() {
     return;
   }
       // Wait until the client sends some data
-  if (debug) Serial.println("new client");
+  int timer = 60;
+  Serial.println("new client");
   while(!client.available()){
+  delay(50);
   yield();
+  timer--;
+  if (timer <= 0) {
+    Serial.println("No Request");
+    client.print(st_html + "No Request" + "</html>\n");
+    client.flush();
+    client.stop();
+    return;  
+    }
   }
   
   // Read the first line of the request
@@ -159,8 +167,8 @@ String tx = "";
   client.println(tx); //   Send the response to the client
 
   if (debug) {
-  Serial.println("Client disonnected");
-  Serial.println(String(power) + "0 Kws</html>\n");
+  Serial.println("Client disconnected");
+  Serial.println(String(power) + "0 Kws");
   }
   // The client will be disconnected on function return
   // and 'client' object is destroyed
