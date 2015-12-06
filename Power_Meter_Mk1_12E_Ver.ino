@@ -41,10 +41,11 @@ const unsigned int meter_pulses = 1000; // set for your meter eg 1000/KW, 800/Kw
 WiFiServer server(80);
 
 void setup() {
+  delay(3000);
   pinMode(4, INPUT_PULLUP); // to try and ensure ESP8266 can start properly
   pinMode(5, INPUT_PULLUP); // with pulse input attached - see readme
   if (!debug) pinMode(1, OUTPUT); 
-  delay(3000);
+  delay(1000);
   if (debug) Serial.begin(115200);
   delay(500);
  
