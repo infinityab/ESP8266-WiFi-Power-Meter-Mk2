@@ -10,7 +10,7 @@
  *  It can be configured in standard or debug mode.
  *  Debug additionally transmits serial process data and flashes the blue
  *  on-board LED. Power Light detector with 3.3v and connect output to GPIO4 (D2).
- *  An external LED may be added via a 390ohm resistor to port GPIO5 (D1)  
+ *  An external LED may be added via a 470ohm resistor to port GPIO5 (D1)  
  *  to indicate meter LED flashes are being processed although the
  *  light detector also has an LED indicating a meter pulse.
  *  The form of the request is such -
