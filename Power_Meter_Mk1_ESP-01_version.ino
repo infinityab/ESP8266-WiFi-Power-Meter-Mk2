@@ -1,6 +1,6 @@
 /*
  *  This sketch is for a simple but very accurate and reliable 2 port HTTP 
- *  webserver using the basic ESP8266-12-dev-kit wifi soc module  
+ *  webserver using the basic ESP8266-01 wifi soc module (note 3.3v)  
  *  and is designed to measure a digital electric meters 
  *  LED pulses and convert them into kilowatt power consumption.
  *  The data may then be retrieved via wifi by PC, tablet, 
@@ -9,10 +9,13 @@
  *  suit various requirements - pretty them up as you please.
  *  It can be configured in standard or debug mode.
  *  Debug additionally transmits serial process data and flashes the blue
- *  on-board LED. Power Light detector with 3.3v and connect output to GPIO4 (D2).
- *  An external LED may be added via a 390ohm resistor to port GPIO5 (D1)  
+ *  on-board LED. Power Light detector with 3.3v and connect output to GPIO0.
+ *  An external LED may be added via a 470ohm resistor to port GPIO2  
  *  to indicate meter LED flashes are being processed although the
  *  light detector also has an LED indicating a meter pulse.
+ *  You should add a reset button to this model to ensure it starts
+ *  correctly as the 2 port pins have a dual purpose used also for 
+ *  programming the module.
  *  The form of the request is such -
  *     http:// local server ip address/gpio/0 ... 1/2/3 .../8
  *     eg http://192.168.0.100/gpio/1
@@ -32,8 +35,8 @@ float eltimest;
 float eltimeend;
 
 // ******** USER ENTRIES *************
-const char* ssid = "Band-NG-N3";    // set your local network SSID
-const char* password = "amersham";  
+const char* ssid = "Band-NG"; //"Your network SSID";    // set your local network SSID
+const char* password = "amersham"; //"SSID password";  
 const unsigned int meter_pulses = 1000; // set for your meter eg 1000/KW, 800/Kw for Sprint meters
 
 // Create an instance of the server and specify the port to listen on
@@ -41,17 +44,17 @@ const unsigned int meter_pulses = 1000; // set for your meter eg 1000/KW, 800/Kw
 WiFiServer server(80);
 
 void setup() {
-  pinMode(4, INPUT_PULLUP); // to try and ensure ESP8266 can start properly
-  pinMode(5, INPUT_PULLUP); // with pulse input attached - see readme
+  pinMode(0, INPUT_PULLUP); // to try and ensure ESP8266 can start properly
+  pinMode(2, INPUT_PULLUP); // with pulse input attached - see readme
   if (!debug) pinMode(1, OUTPUT); 
   delay(3000);
   if (debug) Serial.begin(115200);
   delay(500);
  
-  pinMode(4, INPUT_PULLUP);    // prepare GPIO ports, set up pulse mode input
-  pinMode(5, OUTPUT);
+  pinMode(0, INPUT_PULLUP);    // prepare GPIO ports, set up pulse mode input
+  pinMode(2, OUTPUT);
   if (!debug) digitalWrite(1,1);  // use TX LED as indicator
-  digitalWrite(5, 0); // switch on external LED
+  digitalWrite(2, 0); // switch on external LED
 
   // Connect to WiFi network
   if (debug) {
@@ -79,21 +82,21 @@ void setup() {
 }
 
 void loop() {
-  if (digitalRead(4) == LOW && pulsehigh) {
+  if (digitalRead(0) == LOW && pulsehigh) {
     pulsehigh = false;
     eltimeend = millis();
     power = 3600 * 1000 / (meter_pulses * (eltimeend - eltimest));
     eltimest = eltimeend;
-    digitalWrite(5,0);  // LED indicator on this pin
+    digitalWrite(2,0);  // LED indicator on this pin
     if (!debug) digitalWrite(1,0);  // use TX LED as indicator
     delay(100);  // debounce 100ms
     } else 
     {
-      if (digitalRead(4) == HIGH && !pulsehigh)
+      if (digitalRead(0) == HIGH && !pulsehigh)
         {
         pulsehigh = true;
         if (!debug) digitalWrite(1,1);  // use TX LED as indicator
-        digitalWrite(5,1);  // LED indicator on this pin
+        digitalWrite(2,1);  // LED indicator on this pin
         delay(100);  // debounce 100ms        
         }
     } 
@@ -103,18 +106,18 @@ void loop() {
     return;
   }
       // Wait until the client sends some data
-  int timer = 60;
+  int timer = 60; // but set a timeout
   Serial.println("new client");
   while(!client.available()){
-  delay(50);
-  yield();
-  timer--;
-  if (timer <= 0) {
-    Serial.println("No Request");
-    client.print(st_html + "No Request" + "</html>\n");
-    client.flush();
-    client.stop();
-    return;  
+    delay(50);
+    yield();  // extra stack protection
+    timer--;
+    if (timer <= 0) {
+      Serial.println("No Request");
+      client.print(st_html + "No Request" + "</html>\n");
+      client.flush();
+      client.stop();
+      return;  
     }
   }
   
@@ -137,6 +140,7 @@ void loop() {
     message = 4;  
   else {
     if (debug) Serial.println("Invalid message request");
+    client.println(st_html + "Invalid Message" + "</html>\n");
     client.stop();
     return;
   }
