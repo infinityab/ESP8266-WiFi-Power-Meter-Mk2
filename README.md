@@ -1,7 +1,11 @@
 # ESP8266 WiFi-Power-Meter-Mk1
 ESP8266 WiFi SOC based Webserver Power Meter to calculate accurate kilowatt consumption from digital electricity meters. These meters emit LED pulses of usually 1000 pulses per hour per KW hr, these are detected, timed and converted into the Kilowatt/Hr equivalent and stored on the micro webserver as html data. The data may then be retrieved via a tablet, smartphone, PC or Pi micro using a standard HTTP request for display or further processing. The message takes the form :-
+ 
   http:// your-local-IP-address/gpio/0 or 1/2/3/4 there are 5 messages at present in various forms of presentation.
-  
+  or in PHP on Pi or PC/Linux :-
+<?php    $json_string = file_get_contents("http://192.168.0.100/gpio/0");   ?>
+where $json_string will then hold the power data.
+
 It has been tested on the Landis-Gyr EM5100 meter and works accurately and reliably although at present it wont indicate whether the power is being imported or exported, this is a function of this particular meter. A Mk2 version is being prototyped which has a simple add-on module that connects to the existing Mk1 unit to indicate + or - power.
 
 REQUIREMENTS
