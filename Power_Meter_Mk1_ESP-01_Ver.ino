@@ -65,7 +65,7 @@ void setup() {
   Serial.println(ssid);
   }
   WiFi.begin(ssid, password);
-  IPAddress ip(192, 168, 0, 116);     // * set your local IP address etc.
+  IPAddress ip(192, 168, 0, 116);     // * set your module IP address etc.
   IPAddress gateway(192, 168, 0, 1);  // *         or
   IPAddress subnet(255, 255, 255, 0); // * comment out these 4 lines
   WiFi.config(ip, gateway, subnet);   // * if you are using DHP
