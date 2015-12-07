@@ -1,6 +1,6 @@
 /*
  *  This sketch is for a simple but very accurate and reliable 2 port HTTP 
- *  webserver using the basic ESP8266-12-dev-kit wifi soc module  
+ *  webserver using the ESP8266-12-dev-kit wifi soc module  
  *  and is designed to measure a digital electric meters 
  *  LED pulses and convert them into kilowatt power consumption.
  *  The data may then be retrieved via wifi by PC, tablet, 
