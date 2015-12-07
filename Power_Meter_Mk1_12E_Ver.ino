@@ -10,7 +10,7 @@
  *  It can be configured in standard or debug mode.
  *  Debug additionally transmits serial process data and flashes the blue
  *  on-board LED. Power Light detector with 3.3v and connect output to GPIO4 (D2).
- *  An external LED may be added via a 390ohm resistor to port GPIO5 (D1)  
+ *  An external LED may be added via a 470ohm resistor to port GPIO5 (D1)  
  *  to indicate meter LED flashes are being processed although the
  *  light detector also has an LED indicating a meter pulse.
  *  The form of the request is such -
@@ -41,12 +41,12 @@ const unsigned int meter_pulses = 1000; // set for your meter eg 1000/KW, 800/Kw
 WiFiServer server(80);
 
 void setup() {
-  delay(3000);
+  delay(1000);
   pinMode(4, INPUT_PULLUP); // to try and ensure ESP8266 can start properly
   pinMode(5, INPUT_PULLUP); // with pulse input attached - see readme
   if (!debug) pinMode(1, OUTPUT); 
   delay(1000);
-  if (debug) Serial.begin(115200);
+  if (debug) Serial.begin(115200); // if using debug set monitor to same
   delay(500);
  
   pinMode(4, INPUT_PULLUP);    // prepare GPIO ports, set up pulse mode input
@@ -62,10 +62,10 @@ void setup() {
   Serial.println(ssid);
   }
   WiFi.begin(ssid, password);
-  IPAddress ip(192, 168, 0, 116);   // * comment out the next 4 lines
-  IPAddress gateway(192, 168, 0, 1);  // * if you are using DHP
-  IPAddress subnet(255, 255, 255, 0); // *
-  WiFi.config(ip, gateway, subnet); // *
+  IPAddress ip(192, 168, 0, 116);     // set your module IP address etc.
+  IPAddress gateway(192, 168, 0, 1);  //            or
+  IPAddress subnet(255, 255, 255, 0); // * comment out these lines
+  WiFi.config(ip, gateway, subnet);   // * if you are using DHP
   while (WiFi.status() != WL_CONNECTED) {
   delay(500);
   if (debug) Serial.print(".");
@@ -111,8 +111,8 @@ void loop() {
   yield();
   timer--;
   if (timer <= 0) {
-    Serial.println("No Request");
-    client.print(st_html + "No Request" + "</html>\n");
+    Serial.println("Timeout No Request");
+    client.print(st_html + "Timeout No Request" + "</html>\n");
     client.flush();
     client.stop();
     return;  
