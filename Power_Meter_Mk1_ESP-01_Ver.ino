@@ -9,8 +9,8 @@
  *  suit various requirements - pretty them up as you please.
  *  It can be configured in standard or debug mode.
  *  Debug additionally transmits serial process data and flashes the blue
- *  on-board LED. Power Light detector with 3.3v and connect output to GPIO0.
- *  An external LED may be added via a 470ohm resistor to port GPIO2  
+ *  on-board LED. Power Light detector with 3.3v and connect output to GPIO2.
+ *  An external LED from +3.3v may be added via a 470ohm resistor to port GPIO0 
  *  to indicate meter LED flashes are being processed although the
  *  light detector also has an LED indicating a meter pulse.
  *  You should add a reset button to this model to ensure it starts
@@ -44,17 +44,18 @@ const unsigned int meter_pulses = 1000; // set for your meter eg 1000/KW, 800/Kw
 WiFiServer server(80);
 
 void setup() {
-  pinMode(0, INPUT_PULLUP); // to try and ensure ESP8266 can start properly
-  pinMode(2, INPUT_PULLUP); // with pulse input attached - see readme
-  if (!debug) pinMode(1, OUTPUT); 
   delay(3000);
+  pinMode(2, INPUT_PULLUP); // to try and ensure ESP8266 can start properly
+  pinMode(0, INPUT_PULLUP); // with pulse input attached - see readme
+  if (!debug) pinMode(1, OUTPUT); 
+  delay(1000);
   if (debug) Serial.begin(115200);
   delay(500);
  
-  pinMode(0, INPUT_PULLUP);    // prepare GPIO ports, set up pulse mode input
-  pinMode(2, OUTPUT);
+  pinMode(2, INPUT_PULLUP);    // prepare GPIO ports, set up pulse mode input
+  pinMode(0, OUTPUT);
   if (!debug) digitalWrite(1,1);  // use TX LED as indicator
-  digitalWrite(2, 0); // switch on external LED
+  digitalWrite(0, 0); // switch on external LED
 
   // Connect to WiFi network
   if (debug) {
@@ -64,10 +65,10 @@ void setup() {
   Serial.println(ssid);
   }
   WiFi.begin(ssid, password);
-  IPAddress ip(192, 168, 0, 116);   // * leave out the next 4 lines
-  IPAddress gateway(192, 168, 0, 1);  // * if you are using DHP
-  IPAddress subnet(255, 255, 255, 0); // *
-  WiFi.config(ip, gateway, subnet); // *
+  IPAddress ip(192, 168, 0, 116);     // * set your local IP address etc.
+  IPAddress gateway(192, 168, 0, 1);  // *         or
+  IPAddress subnet(255, 255, 255, 0); // * comment out these 4 lines
+  WiFi.config(ip, gateway, subnet);   // * if you are using DHP
   while (WiFi.status() != WL_CONNECTED) {
   delay(500);
   if (debug) Serial.print(".");
@@ -82,21 +83,21 @@ void setup() {
 }
 
 void loop() {
-  if (digitalRead(0) == LOW && pulsehigh) {
+  if (digitalRead(2) == LOW && pulsehigh) {
     pulsehigh = false;
     eltimeend = millis();
     power = 3600 * 1000 / (meter_pulses * (eltimeend - eltimest));
     eltimest = eltimeend;
-    digitalWrite(2,0);  // LED indicator on this pin
+    digitalWrite(0,0);  // LED indicator on this pin
     if (!debug) digitalWrite(1,0);  // use TX LED as indicator
     delay(100);  // debounce 100ms
     } else 
     {
-      if (digitalRead(0) == HIGH && !pulsehigh)
+      if (digitalRead(2) == HIGH && !pulsehigh)
         {
         pulsehigh = true;
         if (!debug) digitalWrite(1,1);  // use TX LED as indicator
-        digitalWrite(2,1);  // LED indicator on this pin
+        digitalWrite(0,1);  // LED indicator on this pin
         delay(100);  // debounce 100ms        
         }
     } 
@@ -113,8 +114,8 @@ void loop() {
     yield();  // extra stack protection
     timer--;
     if (timer <= 0) {
-      Serial.println("No Request");
-      client.print(st_html + "No Request" + "</html>\n");
+      Serial.println("Timeout No Request");
+      client.print(st_html + "Timeout No Request" + "</html>\n");
       client.flush();
       client.stop();
       return;  
