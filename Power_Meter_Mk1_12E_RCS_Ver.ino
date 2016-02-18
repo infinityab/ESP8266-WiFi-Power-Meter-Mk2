@@ -57,8 +57,8 @@ float eltimeend;
 RCSwitch mySwitch = RCSwitch();
 
 // ******** USER ENTRIES *************
-const char* ssid = "Band-NG-N3";    // set your local network SSID
-const char* password = "amersham";  
+const char* ssid = "your SSID";    // set your local network SSID
+const char* password = "your Password";  
 const unsigned int meter_pulses = 1000; // set for your meter eg 1000/KW, 800/Kw for Sprint meters
 
 Adafruit_BMP085 bmp;
