@@ -45,10 +45,8 @@ float eltimeend;
 <<<<<<< HEAD:Power_Meter_Mk2_12E.ino
 const char* ssid = "Band-NG-N3";    // set your local network SSID & password
 const char* password = "amersham";  
-=======
 const char* ssid = "your SSID";    // set your local network SSID
 const char* password = "your Password";  
->>>>>>> origin/master:Power_Meter_Mk1_12E_RCS_Ver.ino
 const unsigned int meter_pulses = 1000; // set for your meter eg 1000/KW, 800/Kw for Sprint meters
  
 // Create an instance of the server and specify the port to listen on
