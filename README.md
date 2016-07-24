@@ -24,7 +24,7 @@ This project uses the ESP8266 core library for Arduino which then allows you to 
 INSTALL
 
 Bend the light detector so it will contact the flat meter surface and locate it over the pulsing LED and power the module with 3.3v from the ESP8266, adjust pot' until the LED on the module flashes in sympathy and temporarily just stick it in place with tape or bluetack. Do the same with the IR module except the IR LED has to be bent end on and shielded from any stray light. Attach the output (and ground) from light module to the ESP8266, the output to GPIO4 (D2), the IR module output to GPIO12 (D8) and GPIO5 (D1) may be connected to an external LED if required via a 470ohm resistor or thereabouts. If the pulses are registering OK with the ESP8266 the External LED will flash in sympathy. 
-=======
+
 Bend the light detector so it will contact the flat meter surface and locate it over the pulsing LED and power the module with 3.3v from the ESP8266, adjust pot' until the LED on the module flashes in sympathy and temporarily just stick it in place with tape or bluetack. Do the same with the infra-red module and shield around it to block any stray light coming in. Attach the output (and ground) from light module to the ESP8266, the output to GPIO4 (D2), and GPIO5 (D1) may be connected to an external LED if required via a 680ohm resistor or thereabouts. If the pulses are registering OK with the ESP8266 the External LED will flash in sympathy. 
 
 Initially set in debug mode and use the IDE serial monitor to watch module progress.
