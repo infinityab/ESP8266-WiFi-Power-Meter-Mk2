@@ -42,7 +42,7 @@ float eltimest;
 float eltimeend;
 
 // ******** USER ENTRIES *************
-<<<<<<< HEAD:Power_Meter_Mk2_12E.ino
+
 const char* ssid = "Band-NG-N3";    // set your local network SSID & password
 const char* password = "amersham";  
 const char* ssid = "your SSID";    // set your local network SSID
